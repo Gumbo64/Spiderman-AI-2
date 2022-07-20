@@ -1,26 +1,22 @@
-# from BaseHTTPServer import BaseHTTPRequestHandler, HTTPServer # python2
-from http.server import BaseHTTPRequestHandler, HTTPServer # python3
-import time
-class HandleRequests(BaseHTTPRequestHandler):
+import flask
+from flask import request
+app = flask.Flask(__name__)
+ 
 
-    def _set_headers(self):
-        time.sleep(5)
-        self.send_response(200)
-        self.send_header('Content-type', 'text/html')
-        self.end_headers()
+@app.route('/<allvar>', methods=['GET'])
+def my_view_func(allvar):
+    vars = allvar.split("|")
+    names = vars[::2]
+    values = vars[1::2]
+    valdict = {}
+    for i in range(len(names)):
+        valdict[names[i]] = float(values[i])
 
-    def do_GET(self):
-        self._set_headers()
+    print(valdict) 
+    return "swag"
 
-    def do_POST(self):
-        '''Reads post request body'''
-        self._set_headers()
-        content_len = int(self.headers.getheader('content-length', 0))
-        post_body = self.rfile.read(content_len)
-
-    def do_PUT(self):
-        self.do_POST()
-
-host = ''
-port = 8000
-HTTPServer((host, port), HandleRequests).serve_forever()
+if __name__ == '__main__':
+ 
+    # run() method of Flask class runs the application
+    # on the local development server.
+    app.run(port=8000)
