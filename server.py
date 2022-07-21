@@ -2,7 +2,7 @@ import flask
 from flask import request
 from subprocess import Popen
 from os import system
-
+import urllib
 
 app = flask.Flask(__name__)
 window_vars = []
@@ -22,11 +22,11 @@ def my_view_func(allvar):
     return "swag"
 
 if __name__ == '__main__':
-    N_WINDOWS = 4
-    for i in range(N_WINDOWS):
-        print(i)
-        window_vars.append({})
-        Popen(['./ruffle', "spidermanmodded.swf","--width","1", "--height","1", "-P","gameid="+str(i)])
- 
+    # N_WINDOWS = 4
+    # for i in range(N_WINDOWS):
+    #     print(i)
+    #     window_vars.append({})
+    #     Popen(['./ruffle', "spidermanmodded.swf","--width","100", "--height","100", "-P","gameid="+str(i)])
+    window_vars.append({})
     app.run(port=8000)
     

@@ -1,0 +1,97 @@
+_root.musics.playMusic(1);
+m._visible = false;
+if(this.sm == undefined)
+{
+   this.attachMovie("man","sm",this.getNextHighestDepth());
+}
+var human = new Human(sm);
+human.trans(new Vec(0,200));
+human.draw();
+var line = - human.pts[0].x + Stage.width / 2;
+var depth = this.getNextHighestDepth();
+this.attachMovie("Field","field",depth);
+var depth = this.getNextHighestDepth();
+this.attachMovie("View","view",depth);
+var count = 0;
+var level = 1;
+var prev_level = 1;
+var container = new LoadVars();
+
+this.onEnterFrame = function()
+{
+	if (gamepaused){
+
+		this.clear();
+		human.hitTest(field);
+		human.hitTest(field2);
+		human.update();
+		human.draw();
+		var _loc3_ = - (line - Stage.width / 2);
+		if(field._x + field._width < _loc3_ + 600)
+		{
+			if(!field2)
+			{
+				if(count < 11)
+				{
+					depth = this.getNextHighestDepth();
+					this.attachMovie("Field" + count,"field" + depth,depth);
+				}
+				else
+				{
+					depth = this.getNextHighestDepth();
+					this.attachMovie("Field" + Math.floor(Math.random() * 11),"field" + depth,depth);
+				}
+				count++;
+				field2 = this["field" + depth];
+				depth++;
+				field2._x = field._x + field._width;
+			}
+			depth = this.getNextHighestDepth();
+			view.swapDepths(depth);
+		}
+		if(field2)
+		{
+			if(field._x + field._width < _loc3_ - 600)
+			{
+				field.removeMovieClip();
+				field = field2;
+				delete field2;
+				prev_level++;
+			}
+		}
+		if(prev_level == level)
+		{
+			if(field2._x < human.pts[0].x)
+			{
+				level++;
+			}
+		}
+		if(line > 100 - human.pts[0].x + Stage.width / 2)
+		{
+			line = line * 0.8 + (100 - human.pts[0].x + Stage.width / 2) * 0.2;
+		}
+		line -= 1 - Math.floor(line / 50000);
+		_root._x = line;
+		bg._x = - line;
+		view._x = - line;
+		view.level = "level " + level;
+		var _loc4_ = "" + (- int(line - Stage.width / 2));
+		if(_loc4_.length == 1)
+		{
+			_loc4_ = "0" + _loc4_;
+		}
+		if(_loc4_.length == 2)
+		{
+			_loc4_ = "0" + _loc4_;
+		}
+		view.m = Math.abs(Math.round(Number(line) - 550));
+		view.allvars = "x|" + String(human.pts[1].x) + "|y|" + String(human.pts[1].y) + "|vx|" + String(human.pts[1].vx) + "|vy|" + String(human.pts[1].vy) + "|gameid|" + String(gameid);
+		var _loc5_ = new LoadVars();
+		_loc5_.load("http://localhost:8000/" + view.allvars);
+		_root.stop();
+		if(human.pts[0].x < _loc3_ - 400 || human.pts[0].y > 1000)
+		{
+			gotoAndPlay(3);
+		}
+	}
+};
