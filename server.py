@@ -13,25 +13,25 @@ logging.getLogger('werkzeug').disabled = True
 
 window_vars = []
 window_cooldowns = []
+
 @app.route('/<allvar>', methods=['GET'])
-def my_view_func(allvar):
+def receiver(allvar):
+    # parsing game state from URL
     vars = allvar.split("|")
     names = vars[::2]
     values = vars[1::2]
     valdict = {}
     for i in range(len(names)):
         valdict[names[i]] = float(values[i])
-    window_vars[int(valdict["gameid"])] = valdict
-    # system('clear')
-    # for i in window_vars:
-    #     print(i) 
+    
+    win_index =  int(valdict["gameid"])
+    window_vars[win_index] = valdict
        
-    fire = window_cooldowns[int(valdict["gameid"])] > 15
+    fire = window_cooldowns[win_index] > 15
     if fire:
-        window_cooldowns[int(valdict["gameid"])] = 0
+        window_cooldowns[win_index] = 0
     else:
-        window_cooldowns[int(valdict["gameid"])]+=1
-
+        window_cooldowns[win_index]+=1
 
     action = {'x': random()-0.5, 'y':random()-0.5,'fire':fire}
     response = urllib.parse.urlencode(action)
@@ -41,9 +41,11 @@ if __name__ == '__main__':
     my_os = platform.system()
     # config
     c = {
-        "N_WINDOWS":10,
-        "WIDTH":300,
-        "HEIGHT":300,
+        "N_WINDOWS":15,
+        # "WIDTH":500,
+        # "HEIGHT":363,
+        "WIDTH":0,
+        "HEIGHT":0,
     }
 
     if my_os == "Linux":
@@ -57,4 +59,5 @@ if __name__ == '__main__':
             window_cooldowns.append(0)
             Popen(['./ruffle.exe', "spidermanmodded.swf","--width",str(c["WIDTH"]), "--height",str(c["HEIGHT"]), "-P","gameid="+str(i)])
     app.run(port=8000)
-    
+   
+
