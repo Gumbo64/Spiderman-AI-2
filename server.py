@@ -33,7 +33,9 @@ def receiver(allvar):
     else:
         window_cooldowns[win_index]+=1
 
-    action = {'x': random()-0.5, 'y':random()-0.5,'fire':fire}
+    # action = {'x': random()-0.5, 'y':random()-0.5,'fire':fire}
+    action = {'x': 0.5, 'y':-0.5,'fire':fire}
+    # print(action)
     response = urllib.parse.urlencode(action)
     return response
 
@@ -41,11 +43,11 @@ if __name__ == '__main__':
     my_os = platform.system()
     # config
     c = {
-        "N_WINDOWS":15,
+        "N_WINDOWS":1,
         # "WIDTH":500,
         # "HEIGHT":363,
-        "WIDTH":0,
-        "HEIGHT":0,
+        "WIDTH":300,
+        "HEIGHT":300,
     }
 
     if my_os == "Linux":
