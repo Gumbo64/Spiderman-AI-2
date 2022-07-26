@@ -18,8 +18,10 @@ window_cooldowns = []
 def receiver(allvar):
     # parsing game state from URL
     vars = allvar.split("|")
-    names = vars[::2]
-    values = vars[1::2]
+    names = vars[:-2:2]
+    values = vars[1:-2:2]
+    raycasts = list(map(float,vars[-1].split(",")))
+    print(raycasts)
     valdict = {}
     for i in range(len(names)):
         valdict[names[i]] = float(values[i])
