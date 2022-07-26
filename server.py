@@ -33,8 +33,8 @@ def receiver(allvar):
     else:
         window_cooldowns[win_index]+=1
 
-    # action = {'x': random()-0.5, 'y':random()-0.5,'fire':fire}
-    action = {'x': 0.5, 'y':-0.5,'fire':fire}
+    action = {'x': random()-0.5, 'y':random()-0.5,'fire':fire}
+    # action = {'x': 0.5, 'y':-0.5,'fire':fire}
     # print(action)
     response = urllib.parse.urlencode(action)
     return response
