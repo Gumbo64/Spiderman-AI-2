@@ -21,7 +21,6 @@ def receiver(allvar):
     names = vars[:-2:2]
     values = vars[1:-2:2]
     raycasts = list(map(float,vars[-1].split(",")))
-    print(raycasts)
     valdict = {}
     for i in range(len(names)):
         valdict[names[i]] = float(values[i])
@@ -45,7 +44,7 @@ if __name__ == '__main__':
     my_os = platform.system()
     # config
     c = {
-        "N_WINDOWS":1,
+        "N_WINDOWS":5,
         # "WIDTH":500,
         # "HEIGHT":363,
         "WIDTH":300,
