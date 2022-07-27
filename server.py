@@ -44,7 +44,7 @@ if __name__ == '__main__':
     my_os = platform.system()
     # config
     c = {
-        "N_WINDOWS":5,
+        "N_WINDOWS":1,
         # "WIDTH":500,
         # "HEIGHT":363,
         "WIDTH":300,
