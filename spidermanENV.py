@@ -37,6 +37,7 @@ class Spiderman_ENV(Env):
 			# "HEIGHT":363,
 			"WIDTH":300,
 			"HEIGHT":300,
+			"COOLDOWN":10,
 		}
 
 
@@ -49,6 +50,7 @@ class Spiderman_ENV(Env):
 		sock.setblocking(False)
 		sock.settimeout(None)
 		self.conn, addr = sock.accept()
+		self.fire_cooldown = 0
 	def open_windows(self):
 		ruffle_launchers = {
 			"Linux":"./ruffle",
@@ -65,7 +67,14 @@ class Spiderman_ENV(Env):
 	def step(self, action_array):
 		data = self.conn.recv(1024)
 		self.vars = self.parse_vars(data)
-		action = {'x': action_array[0], 'y':action_array[1],'fire':action_array[2] > 0}
+
+		fire = (action_array[2] > 0) and self.fire_count > self.c["COOLDOWN"]
+		if fire:
+			self.fire_count = 0
+		else:
+			self.fire_count += 1
+		action = {'x': action_array[0], 'y':action_array[1],'fire':fire}
+		
 
 		encoded_action = urllib.parse.urlencode(action)
 		response = "HTTP/1.1 " + str(Response(text=encoded_action))
@@ -75,7 +84,7 @@ class Spiderman_ENV(Env):
 		observation = self.get_observation()
 		done = self.get_done()
 		reward = self.get_reward()
-
+		
 		
 		
 		# print(reward)
@@ -105,7 +114,7 @@ class Spiderman_ENV(Env):
 		encoded_action = urllib.parse.urlencode(action)
 		response = "HTTP/1.1 " + str(Response(text=encoded_action))
 		self.conn.send(response.encode('utf-8'))
-
+		self.fire_count = 0
 
 		return self.get_observation()
 
