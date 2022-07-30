@@ -51,16 +51,16 @@ if __name__ == '__main__':
         "HEIGHT":300,
     }
 
-    if my_os == "Linux":
-        for i in range(c["N_WINDOWS"]):
-            window_vars.append({})
-            window_cooldowns.append(0)
-            Popen(['./ruffle', "spidermanmodded.swf","--width",str(c["WIDTH"]), "--height",str(c["HEIGHT"]), "-P","gameid="+str(i)])
-    else:
-        for i in range(c["N_WINDOWS"]):
-            window_vars.append({})
-            window_cooldowns.append(0)
-            Popen(['./ruffle.exe', "spidermanmodded.swf","--width",str(c["WIDTH"]), "--height",str(c["HEIGHT"]), "-P","gameid="+str(i)])
+    # if my_os == "Linux":
+    #     for i in range(c["N_WINDOWS"]):
+    #         window_vars.append({})
+    #         window_cooldowns.append(0)
+    #         Popen(['./ruffle', "spidermanmodded.swf","--width",str(c["WIDTH"]), "--height",str(c["HEIGHT"]), "-P","gameid="+str(i)])
+    # else:
+    #     for i in range(c["N_WINDOWS"]):
+    #         window_vars.append({})
+    #         window_cooldowns.append(0)
+    #         Popen(['./ruffle.exe', "spidermanmodded.swf","--width",str(c["WIDTH"]), "--height",str(c["HEIGHT"]), "-P","gameid="+str(i)])
     app.run(port=8000)
    
 

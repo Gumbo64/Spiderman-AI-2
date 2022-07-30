@@ -46,7 +46,7 @@ def open_windows():
     
 
     # for i in range(c["N_WINDOWS"]):
-    Popen([ruffle_launchers[my_os], "spidermanmodded.swf","--width",str(c["WIDTH"]), "--height",str(c["HEIGHT"]), "-P","gameid="+str(0)])
+    return Popen([ruffle_launchers[my_os], "spidermanmodded.swf","--width",str(c["WIDTH"]), "--height",str(c["HEIGHT"]),"-g","dx12","-P","gameid="+str(0)])
 
 
 
@@ -63,7 +63,7 @@ c = {
 sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 sock.bind(("localhost", 8000))
 
-open_windows()
+p = open_windows()
 
 sock.listen()
 sock.setblocking(False)

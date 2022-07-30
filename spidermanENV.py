@@ -11,7 +11,8 @@ from random import random
 from subprocess import Popen
 import platform
 from webob import Response
-
+import os
+import time
 
 
 
@@ -33,24 +34,16 @@ class Spiderman_ENV(Env):
 			
 		self.c = {
 			# "N_WINDOWS":10,
-			# "WIDTH":500,
-			# "HEIGHT":363,
-			"WIDTH":300,
-			"HEIGHT":300,
+			"WIDTH":500,
+			"HEIGHT":363,
+			# "WIDTH":300,
+			# "HEIGHT":300,
 			"COOLDOWN":10,
 		}
+		self.window = None
+		self.sock = None
+		self.reset()
 
-
-		sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-		sock.bind(("localhost", 8000))
-
-		self.open_windows()
-
-		sock.listen()
-		sock.setblocking(False)
-		sock.settimeout(None)
-		self.conn, addr = sock.accept()
-		self.fire_cooldown = 0
 	def open_windows(self):
 		ruffle_launchers = {
 			"Linux":"./ruffle",
@@ -61,19 +54,19 @@ class Spiderman_ENV(Env):
 		
 
 		# for i in range(c["N_WINDOWS"]):
-		Popen([ruffle_launchers[my_os], "spidermanmodded.swf","--width",str(self.c["WIDTH"]), "--height",str(self.c["HEIGHT"]), "-P","gameid="+str(0)])
+		return Popen([ruffle_launchers[my_os], "spidermanmodded.swf","--width",str(self.c["WIDTH"]), "--height",str(self.c["HEIGHT"]), "-P","gameid="+str(0)])
 
 
 	def step(self, action_array):
+		# time.sleep(2)
+		totalreward = 0
 		data = self.conn.recv(1024)
+		# print(data)
 		self.vars = self.parse_vars(data)
 
-		fire = (action_array[2] > 0) and self.fire_count > self.c["COOLDOWN"]
-		if fire:
-			self.fire_count = 0
-		else:
-			self.fire_count += 1
-		action = {'x': action_array[0], 'y':action_array[1],'fire':fire}
+		
+		action = {'x': action_array[0], 'y':action_array[1],'fire':(action_array[2] > 0)}
+
 		
 
 		encoded_action = urllib.parse.urlencode(action)
@@ -107,15 +100,26 @@ class Spiderman_ENV(Env):
 		return valdict
 	
 	def reset(self):
-		data = self.conn.recv(1024)
-		self.vars = self.parse_vars(data)
-		action = {'x':0, 'y':0,'fire':False}
+		if not self.window is None:
+			self.sock.close()
+			os.system("taskkill /f /im  ruffle.exe")
+			os.system("taskkill /f /im  ruffle.exe")
+		
+		self.fire_count=0
+		self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+		self.sock.bind(("localhost", 8000))
 
-		encoded_action = urllib.parse.urlencode(action)
-		response = "HTTP/1.1 " + str(Response(text=encoded_action))
-		self.conn.send(response.encode('utf-8'))
-		self.fire_count = 0
+		self.window = self.open_windows()
 
+		self.sock.listen()
+		self.sock.setblocking(False)
+		self.sock.settimeout(None)
+		self.conn, addr = self.sock.accept()
+
+
+		self.step([0,0,False])
+
+		
 		return self.get_observation()
 
 
@@ -142,6 +146,8 @@ class Spiderman_ENV(Env):
 		observation.append(hand)
 
 		final = np.array(observation)
+		# print(self.vars)
+		# print(final)
 		return final
 
 
