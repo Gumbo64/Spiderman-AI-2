@@ -8,7 +8,7 @@ from gym.spaces import Box
 import socket
 import urllib.parse
 from random import random
-from subprocess import Popen
+from subprocess import Popen,CREATE_NO_WINDOW
 import platform
 from webob import Response
 import os
@@ -22,7 +22,7 @@ class Spiderman_ENV(Env):
 		super().__init__()
 		# Setup spaces
 		
-		self.input_dims = 32
+		self.input_dims = 33
 		self.observation_space = Box(low=0, high=1, shape=(self.input_dims,), dtype=np.float64)
 
 		# first 2 inputs effectively a normalised vector output
@@ -138,12 +138,14 @@ class Spiderman_ENV(Env):
 		# 600 is a bit more than the screen height
 		y_coord =(sorted((-600,v["y"], 600))[1]/600 + 1)/2  # should be between 0 and 1
 		hand = v["hand"]
+		linedist = v["linedist"]
 
 
 		observation += vel_array
 		observation += rel_coord_array
 		observation.append(y_coord)
 		observation.append(hand)
+		observation.append(linedist)
 
 		final = np.array(observation)
 		# print(self.vars)

@@ -22,19 +22,8 @@ def receiver(allvar):
     values = vars[1:-2:2]
     raycasts = list(map(float,vars[-1].split(",")))
     valdict = {}
-    for i in range(len(names)):
-        valdict[names[i]] = float(values[i])
-    
-    win_index =  int(valdict["gameid"])
-    window_vars[win_index] = valdict
-       
-    fire = window_cooldowns[win_index] > 15
-    if fire:
-        window_cooldowns[win_index] = 0
-    else:
-        window_cooldowns[win_index]+=1
 
-    action = {'x': random()-0.5, 'y':random()-0.5,'fire':fire}
+    action = {'x': random()-0.5, 'y':random()-0.5,'fire':True}
     # action = {'x': 0.5, 'y':-0.5,'fire':fire}
     # print(action)
     response = urllib.parse.urlencode(action)
@@ -44,23 +33,23 @@ if __name__ == '__main__':
     my_os = platform.system()
     # config
     c = {
-        "N_WINDOWS":1,
+        "N_WINDOWS":4,
         # "WIDTH":500,
         # "HEIGHT":363,
         "WIDTH":300,
         "HEIGHT":300,
     }
 
-    # if my_os == "Linux":
-    #     for i in range(c["N_WINDOWS"]):
-    #         window_vars.append({})
-    #         window_cooldowns.append(0)
-    #         Popen(['./ruffle', "spidermanmodded.swf","--width",str(c["WIDTH"]), "--height",str(c["HEIGHT"]), "-P","gameid="+str(i)])
-    # else:
-    #     for i in range(c["N_WINDOWS"]):
-    #         window_vars.append({})
-    #         window_cooldowns.append(0)
-    #         Popen(['./ruffle.exe', "spidermanmodded.swf","--width",str(c["WIDTH"]), "--height",str(c["HEIGHT"]), "-P","gameid="+str(i)])
+    if my_os == "Linux":
+        for i in range(c["N_WINDOWS"]):
+            window_vars.append({})
+            window_cooldowns.append(0)
+            Popen(['./ruffle', "spidermanmodded.swf","--width",str(c["WIDTH"]), "--height",str(c["HEIGHT"]), "-P","gameid="+str(i)])
+    else:
+        for i in range(c["N_WINDOWS"]):
+            window_vars.append({})
+            window_cooldowns.append(0)
+            Popen(['./ruffle.exe', "spidermanmodded.swf","--width",str(c["WIDTH"]), "--height",str(c["HEIGHT"]), "-P","gameid="+str(i)])
     app.run(port=8000)
    
 
