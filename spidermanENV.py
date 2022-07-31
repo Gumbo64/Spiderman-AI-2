@@ -22,7 +22,7 @@ class Spiderman_ENV(Env):
 		super().__init__()
 		# Setup spaces
 		
-		self.input_dims = 33
+		self.input_dims = 53
 		self.observation_space = Box(low=0, high=1, shape=(self.input_dims,), dtype=np.float64)
 
 		# first 2 inputs effectively a normalised vector output
@@ -126,7 +126,7 @@ class Spiderman_ENV(Env):
 	def get_observation(self):
 		v = self.vars
 		observation = []
-		observation += v["raycasts"] # 20
+		observation += v["raycasts"] # 40
 		
 		rel_coord_array = [v["w1x"],v["w2x"],v["w1y"],v["w2y"]] #4
 		# clamp and normalise coords
