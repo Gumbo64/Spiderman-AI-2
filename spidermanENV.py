@@ -59,27 +59,23 @@ class Spiderman_ENV(Env):
 
 	def step(self, action_array):
 		# time.sleep(2)
-		totalreward = 0
-		data = self.conn.recv(1024)
-		# print(data)
-		self.vars = self.parse_vars(data)
+		try:
+			data = self.conn.recv(1024)
+			# print(data)
+			self.vars = self.parse_vars(data)
+			action = {'x': action_array[0], 'y':action_array[1],'fire':(action_array[2] > 0)}
+			encoded_action = urllib.parse.urlencode(action)
+			response = "HTTP/1.1 " + str(Response(text=encoded_action))
+			self.conn.send(response.encode('utf-8'))
 
-		
-		action = {'x': action_array[0], 'y':action_array[1],'fire':(action_array[2] > 0)}
 
-		
-
-		encoded_action = urllib.parse.urlencode(action)
-		response = "HTTP/1.1 " + str(Response(text=encoded_action))
-		self.conn.send(response.encode('utf-8'))
-
+		except:
+			print("An exception occurred") 
+			self.reset()
 
 		observation = self.get_observation()
 		done = self.get_done()
-		reward = self.get_reward()
-		
-		
-		
+		reward = self.get_reward()	
 		# print(reward)
 		info = {}
 		return observation, reward, done, info
