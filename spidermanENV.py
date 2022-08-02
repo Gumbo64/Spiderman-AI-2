@@ -101,8 +101,8 @@ class Spiderman_ENV(Env):
 			pid = self.window.pid
 			os.system("taskkill /f /pid "+str(pid))
 			os.system("taskkill /f /pid "+str(pid))
-			os.system("sudo kill -9 "+str(pid))
-			os.system("sudo kill -9 "+str(pid))
+			# os.system("sudo kill -9 "+str(pid))
+			# os.system("sudo kill -9 "+str(pid))
 		
 		self.fire_count=0
 		self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -110,16 +110,16 @@ class Spiderman_ENV(Env):
 
 		self.window = self.open_windows()
 
-		print("listening")
+		# print("listening")
 		self.sock.listen()
-		print("listened")
+		# print("listened")
 		self.sock.setblocking(False)
 		self.sock.settimeout(None)
 		self.conn, addr = self.sock.accept()
 
-		print("stepping")
+		# print("stepping")
 		self.step([0,0,False])
-		print("stepped")
+		# print("stepped")
 		
 		return self.get_observation()
 
