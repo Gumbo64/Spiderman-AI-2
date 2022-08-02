@@ -8,7 +8,7 @@ from gym.spaces import Box
 import socket
 import urllib.parse
 from random import random
-from subprocess import Popen,CREATE_NO_WINDOW
+from subprocess import Popen
 import platform
 from webob import Response
 import os
@@ -18,10 +18,11 @@ import time
 
 
 class Spiderman_ENV(Env):
-	def __init__(self):
+	def __init__(self,gameid):
 		super().__init__()
 		# Setup spaces
-		
+		print("ENV",gameid,"made")
+		self.gameid = int(gameid)
 		self.input_dims = 53
 		self.observation_space = Box(low=0, high=1, shape=(self.input_dims,), dtype=np.float64)
 
@@ -36,8 +37,8 @@ class Spiderman_ENV(Env):
 			# "N_WINDOWS":10,
 			# "WIDTH":500,
 			# "HEIGHT":363,
-			"WIDTH":30,
-			"HEIGHT":30,
+			"WIDTH":300,
+			"HEIGHT":300,
 			"COOLDOWN":10,
 		}
 		self.window = None
@@ -51,10 +52,9 @@ class Spiderman_ENV(Env):
 		}
 
 		my_os = platform.system()
-		
 
 		# for i in range(c["N_WINDOWS"]):
-		return Popen([ruffle_launchers[my_os], "spidermanmodded.swf","--width",str(self.c["WIDTH"]), "--height",str(self.c["HEIGHT"]), "-P","gameid="+str(0)])
+		return Popen([ruffle_launchers[my_os], "spidermanmodded.swf","--width",str(self.c["WIDTH"]), "--height",str(self.c["HEIGHT"]), "-P","gameid="+str(self.gameid)])
 
 
 	def step(self, action_array):
@@ -98,23 +98,28 @@ class Spiderman_ENV(Env):
 	def reset(self):
 		if not self.window is None:
 			self.sock.close()
-			os.system("taskkill /f /im  ruffle.exe")
-			os.system("taskkill /f /im  ruffle.exe")
+			pid = self.window.pid
+			os.system("taskkill /f /pid "+str(pid))
+			os.system("taskkill /f /pid "+str(pid))
+			os.system("sudo kill -9 "+str(pid))
+			os.system("sudo kill -9 "+str(pid))
 		
 		self.fire_count=0
 		self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-		self.sock.bind(("localhost", 8000))
+		self.sock.bind( ("localhost", 8000 + self.gameid) )
 
 		self.window = self.open_windows()
 
+		print("listening")
 		self.sock.listen()
+		print("listened")
 		self.sock.setblocking(False)
 		self.sock.settimeout(None)
 		self.conn, addr = self.sock.accept()
 
-
+		print("stepping")
 		self.step([0,0,False])
-
+		print("stepped")
 		
 		return self.get_observation()
 
@@ -155,3 +160,11 @@ class Spiderman_ENV(Env):
 
 	def get_done(self):
 		return self.vars["done"] != 0
+
+if "__main__" == __name__:
+	env = Spiderman_ENV(3)
+	env2 = Spiderman_ENV(4)
+	while True:
+		env.step([1,-1,True])
+		env2.step([1,-1,True])
+		
