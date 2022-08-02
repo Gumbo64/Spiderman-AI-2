@@ -34,10 +34,10 @@ class Spiderman_ENV(Env):
 			
 		self.c = {
 			# "N_WINDOWS":10,
-			"WIDTH":500,
-			"HEIGHT":363,
-			# "WIDTH":300,
-			# "HEIGHT":300,
+			# "WIDTH":500,
+			# "HEIGHT":363,
+			"WIDTH":30,
+			"HEIGHT":30,
 			"COOLDOWN":10,
 		}
 		self.window = None
