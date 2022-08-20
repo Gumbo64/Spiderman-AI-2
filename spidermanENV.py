@@ -14,7 +14,7 @@ from webob import Response
 import os
 import time
 
-
+import csv
 
 
 class Spiderman_ENV(Env):
@@ -23,7 +23,7 @@ class Spiderman_ENV(Env):
 		# Setup spaces
 		print("ENV",gameid,"made")
 		self.gameid = int(gameid)
-		self.input_dims = 53
+		self.input_dims = 52
 		self.observation_space = Box(low=0, high=1, shape=(self.input_dims,), dtype=np.float64)
 
 		# first 2 inputs effectively a normalised vector output
@@ -54,7 +54,7 @@ class Spiderman_ENV(Env):
 		my_os = platform.system()
 
 		# for i in range(c["N_WINDOWS"]):
-		return Popen([ruffle_launchers[my_os], "spidermanmodded.swf","--width",str(self.c["WIDTH"]), "--height",str(self.c["HEIGHT"]), "-P","gameid="+str(self.gameid)])
+		return Popen([ruffle_launchers[my_os], "spidermantrain.swf","--width",str(self.c["WIDTH"]), "--height",str(self.c["HEIGHT"]), "-P","gameid="+str(self.gameid)])
 
 
 	def step(self, action_array):
@@ -78,6 +78,11 @@ class Spiderman_ENV(Env):
 		reward = self.get_reward()	
 		# print(reward)
 		info = {}
+
+		with open(r'data/data' + str(self.gameid) + '.csv', 'a') as f:
+			writer = csv.writer(f)
+			writer.writerow(observation)
+		
 		return observation, reward, done, info
 
 
@@ -93,6 +98,7 @@ class Spiderman_ENV(Env):
 		for i in range(len(names)):
 			valdict[names[i]] = float(values[i])
 
+		
 		return valdict
 	
 	def reset(self):
@@ -138,14 +144,12 @@ class Spiderman_ENV(Env):
 
 		# 600 is a bit more than the screen height
 		y_coord =(sorted((-600,v["y"], 600))[1]/600 + 1)/2  # should be between 0 and 1
-		hand = v["hand"]
 		linedist = v["linedist"]
 
 
 		observation += vel_array
 		observation += rel_coord_array
 		observation.append(y_coord)
-		observation.append(hand)
 		observation.append(linedist)
 
 		final = np.array(observation)
