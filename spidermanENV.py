@@ -1,16 +1,20 @@
-
-# environment
+from math import cos, pi, sin
 import numpy as np
 from matplotlib import pyplot as plt
 from gym import Env
 from gym.spaces import Box
 
+# definitely use these if you want to avoid hassle
 import socket
 import urllib.parse
-from random import random
-from subprocess import Popen
-import platform
 from webob import Response
+from subprocess import Popen
+
+import platform
+from random import random
+
+
+
 import os
 import time
 
@@ -26,12 +30,9 @@ class Spiderman_ENV(Env):
 		self.input_dims = 52
 		self.observation_space = Box(low=0, high=1, shape=(self.input_dims,), dtype=np.float64)
 
-		# first 2 inputs effectively a normalised vector output
-		# when u click in the game it calculates the angle and nothing else so this range is all you need
-		# 3rd input is whether the agent wants to fire a web or not, if it the value is above a threshold it will fire
-		# this is important because spamming shots causes the tip of the webs to fly away, meaning they won't attach to anything and spiderman dies
 
-		self.action_space = Box( np.array([-1,-1,-1]), np.array([+1,+1,+1]))
+		# self.action_space = Box( np.array([-1,-1,-1]), np.array([+1,+1,+1]))
+		self.action_space = Box( np.array([-pi,-1]), np.array([+pi,+1]))
 			
 		self.c = {
 			# "N_WINDOWS":10,
@@ -63,7 +64,7 @@ class Spiderman_ENV(Env):
 			data = self.conn.recv(1024)
 			# print(data)
 			self.vars = self.parse_vars(data)
-			action = {'x': action_array[0], 'y':action_array[1],'fire':(action_array[2] > 0)}
+			action = {'x': cos(action_array[0]), 'y':sin(action_array[0]),'fire':(action_array[1] > 0)}
 			encoded_action = urllib.parse.urlencode(action)
 			response = "HTTP/1.1 " + str(Response(text=encoded_action))
 			self.conn.send(response.encode('utf-8'))
@@ -79,9 +80,9 @@ class Spiderman_ENV(Env):
 		# print(reward)
 		info = {}
 
-		with open(r'data/data' + str(self.gameid) + '.csv', 'a') as f:
-			writer = csv.writer(f)
-			writer.writerow(observation)
+		# with open(r'data/data' + str(self.gameid) + '.csv', 'a') as f:
+		# 	writer = csv.writer(f)
+		# 	writer.writerow(observation)
 		
 		return observation, reward, done, info
 
