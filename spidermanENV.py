@@ -1,24 +1,20 @@
-from math import cos, pi, sin
+
+# environment
 import numpy as np
 from matplotlib import pyplot as plt
 from gym import Env
 from gym.spaces import Box
 
-# definitely use these if you want to avoid hassle
 import socket
 import urllib.parse
-from webob import Response
-from subprocess import Popen
-
-import platform
 from random import random
-
-
-
+from subprocess import Popen
+import platform
+from webob import Response
 import os
 import time
 
-import csv
+
 
 
 class Spiderman_ENV(Env):
@@ -27,19 +23,22 @@ class Spiderman_ENV(Env):
 		# Setup spaces
 		print("ENV",gameid,"made")
 		self.gameid = int(gameid)
-		self.input_dims = 52
+		self.input_dims = 53
 		self.observation_space = Box(low=0, high=1, shape=(self.input_dims,), dtype=np.float64)
 
+		# first 2 inputs effectively a normalised vector output
+		# when u click in the game it calculates the angle and nothing else so this range is all you need
+		# 3rd input is whether the agent wants to fire a web or not, if it the value is above a threshold it will fire
+		# this is important because spamming shots causes the tip of the webs to fly away, meaning they won't attach to anything and spiderman dies
 
-		# self.action_space = Box( np.array([-1,-1,-1]), np.array([+1,+1,+1]))
-		self.action_space = Box( np.array([-pi,-1]), np.array([+pi,+1]))
+		self.action_space = Box( np.array([-1,-1,-1]), np.array([+1,+1,+1]))
 			
 		self.c = {
 			# "N_WINDOWS":10,
 			# "WIDTH":500,
 			# "HEIGHT":363,
-			"WIDTH":300,
-			"HEIGHT":300,
+			"WIDTH":800,
+			"HEIGHT":800,
 			"COOLDOWN":10,
 		}
 		self.window = None
@@ -55,7 +54,7 @@ class Spiderman_ENV(Env):
 		my_os = platform.system()
 
 		# for i in range(c["N_WINDOWS"]):
-		return Popen([ruffle_launchers[my_os], "spidermantrain.swf","--width",str(self.c["WIDTH"]), "--height",str(self.c["HEIGHT"]), "-P","gameid="+str(self.gameid)])
+		return Popen([ruffle_launchers[my_os], "spidermanmodded.swf","--width",str(self.c["WIDTH"]), "--height",str(self.c["HEIGHT"]), "-P","gameid="+str(self.gameid)])
 
 
 	def step(self, action_array):
@@ -64,7 +63,7 @@ class Spiderman_ENV(Env):
 			data = self.conn.recv(1024)
 			# print(data)
 			self.vars = self.parse_vars(data)
-			action = {'x': cos(action_array[0]), 'y':sin(action_array[0]),'fire':(action_array[1] > 0)}
+			action = {'x': action_array[0], 'y':action_array[1],'fire':(action_array[2] > 0)}
 			encoded_action = urllib.parse.urlencode(action)
 			response = "HTTP/1.1 " + str(Response(text=encoded_action))
 			self.conn.send(response.encode('utf-8'))
@@ -79,11 +78,6 @@ class Spiderman_ENV(Env):
 		reward = self.get_reward()	
 		# print(reward)
 		info = {}
-
-		# with open(r'data/data' + str(self.gameid) + '.csv', 'a') as f:
-		# 	writer = csv.writer(f)
-		# 	writer.writerow(observation)
-		
 		return observation, reward, done, info
 
 
@@ -99,7 +93,6 @@ class Spiderman_ENV(Env):
 		for i in range(len(names)):
 			valdict[names[i]] = float(values[i])
 
-		
 		return valdict
 	
 	def reset(self):
@@ -144,13 +137,15 @@ class Spiderman_ENV(Env):
 		vel_array = list(map(lambda n: ((sorted((-200,n, 200))[1]/200 + 1)/2), vel_array))
 
 		# 600 is a bit more than the screen height
-		y_coord =(sorted((-600,v["y"], 600))[1]/600 + 1)/2  # should be between 0 and 1
+		y_coord =(sorted((-600,v["y"], 600))[1]/600 + 1)/2  # clamp between 0 and 1
+		hand = v["hand"]
 		linedist = v["linedist"]
 
 
 		observation += vel_array
 		observation += rel_coord_array
 		observation.append(y_coord)
+		observation.append(hand)
 		observation.append(linedist)
 
 		final = np.array(observation)
