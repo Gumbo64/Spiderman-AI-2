@@ -24,7 +24,7 @@ class Spiderman_ENV(Env):
 		print("ENV",gameid,"made")
 		self.gameid = int(gameid)
 		self.input_dims = 53
-		self.observation_space = Box(low=0, high=1, shape=(self.input_dims,), dtype=np.float64)
+		self.observation_space = Box(low=-np.inf, high=np.inf, shape=(self.input_dims,), dtype=np.float32)
 
 		# first 2 inputs is a vector output (2 components)
 		# when u click in the game it calculates the angle and nothing else so this range is all you need
@@ -37,8 +37,8 @@ class Spiderman_ENV(Env):
 			# "N_WINDOWS":10,
 			# "WIDTH":500,
 			# "HEIGHT":363,
-			"WIDTH":800,
-			"HEIGHT":800,
+			"WIDTH":500,
+			"HEIGHT":363,
 			"COOLDOWN":10,
 		}
 		self.window = None
@@ -58,20 +58,22 @@ class Spiderman_ENV(Env):
 
 
 	def step(self, action_array):
-		# time.sleep(2)
+		# time.sleep(0.01)
 		try:
-			data = self.conn.recv(1024)
-			# print(data)
-			self.vars = self.parse_vars(data)
-			
 			action = {'x': action_array[0], 'y':action_array[1],'fire':(action_array[2] > 0)}
 			encoded_action = urllib.parse.urlencode(action)
 			response = "HTTP/1.1 " + str(Response(text=encoded_action))
 			self.conn.send(response.encode('utf-8'))
 
+			data = self.conn.recv(1024)
+			# print(data)
+			self.vars = self.parse_vars(data)
 
-		except:
+
+
+		except Exception as e: 
 			print("An exception occurred") 
+			print(e)
 			self.reset()
 
 		observation = self.get_observation()
@@ -80,6 +82,11 @@ class Spiderman_ENV(Env):
 		# print(reward)
 		info = {}
 		return observation, reward, done, info
+	# def forcestep(self,action_array):
+	# 	action = {'x': action_array[0], 'y':action_array[1],'fire':(action_array[2] > 0)}
+	# 	encoded_action = urllib.parse.urlencode(action)
+	# 	response = "HTTP/1.1 " + str(Response(text=encoded_action))
+	# 	self.conn.send(response.encode('utf-8'))
 
 
 	def parse_vars(self,data):
@@ -88,11 +95,11 @@ class Spiderman_ENV(Env):
 		vars = str_data.split("|")
 		names = vars[:-2:2]
 		values = vars[1:-2:2]
-		raycasts = list(map(float,vars[-1].split(",")))
+		raycasts = list(map(np.float32,vars[-1].split(",")))
 
 		valdict = {"raycasts":raycasts}
 		for i in range(len(names)):
-			valdict[names[i]] = float(values[i])
+			valdict[names[i]] = np.float32(values[i])
 
 		return valdict
 	
@@ -105,7 +112,7 @@ class Spiderman_ENV(Env):
 			# os.system("sudo kill -9 "+str(pid))
 			# os.system("sudo kill -9 "+str(pid))
 		
-		self.fire_count=0
+
 		self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 		self.sock.bind( ("localhost", 8000 + self.gameid) )
 
@@ -114,13 +121,22 @@ class Spiderman_ENV(Env):
 		# print("listening")
 		self.sock.listen()
 		# print("listened")
-		self.sock.setblocking(False)
-		self.sock.settimeout(None)
 		self.conn, addr = self.sock.accept()
+		# self.sock.setblocking(True)
+		self.sock.settimeout(None)
 
 		# print("stepping")
-		self.step([0,0,False])
+		# self.step([0,0,False])
 		# print("stepped")
+		try:
+			data = self.conn.recv(1024)
+			# print(data)
+			self.vars = self.parse_vars(data)
+			self.step([0,0,False])
+		except Exception as e: 
+			print("An exception occurred") 
+			print(e)
+			return self.reset()
 		
 		return self.get_observation()
 
@@ -132,13 +148,15 @@ class Spiderman_ENV(Env):
 		
 		rel_coord_array = [v["w1x"],v["w2x"],v["w1y"],v["w2y"]] #4
 		# clamp them scale coords between 0 and 1
-		rel_coord_array = list(map(lambda n: ((sorted((-600,n, 600))[1]/600 + 1)/2), rel_coord_array))
+
+		# rel_coord_array = list(map(lambda n: ((sorted((-600,n, 600))[1]/600 + 1)/2), rel_coord_array))
 
 		vel_array = [v["vx"],v["vy"],v["w1vx"],v["w2vx"],v["w1vy"],v["w2vy"]] #6
-		vel_array = list(map(lambda n: ((sorted((-200,n, 200))[1]/200 + 1)/2), vel_array))
+		# vel_array = list(map(lambda n: ((sorted((-200,n, 200))[1]/200 + 1)/2), vel_array))
 
 		# 600 is a bit more than the screen height
-		y_coord =(sorted((-600,v["y"], 600))[1]/600 + 1)/2  # clamp between 0 and 1
+		y_coord = v["y"]
+		# (sorted((-600,v["y"], 600))[1]/600 + 1)/2  # clamp between 0 and 1
 		hand = v["hand"]
 		linedist = v["linedist"]
 
